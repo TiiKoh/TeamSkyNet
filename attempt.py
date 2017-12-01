@@ -2,7 +2,8 @@ import urllib3, simplejson
 
 http = urllib3.PoolManager()
 
-searchTerm = input("Give me a search term:")
+# Capitalize input to match titles in data.
+searchTerm = input("Give me a search term: ").capitalize()
 print(searchTerm)
 
 #Contructs url query for title field using user's search term
