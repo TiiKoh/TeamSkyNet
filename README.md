@@ -1,3 +1,5 @@
 # TeamSkyNet
-Taking over the world.
-Maybe?
+
+KIK-LG211 Building NLP Applications (2017)
+
+
