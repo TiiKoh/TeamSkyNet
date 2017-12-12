@@ -51,7 +51,7 @@ for document in jsonTitle['response']['docs']:
     #    print(doc_key, "=", document[doc_key])
 
 # Contructs url query for text field using user's search term
-urlText = "http://localhost:8983/solr/fiwiki/select?indent=on&q=text:" + searchTerm + "&wt=json"
+urlText = "http://localhost:8983/solr/fiwiki/select?hl.fl=text&hl=on&q=text:" + searchTerm + "&wt=json"
 responseText =  http.request('GET', urlText)
 #print(responseText.status)
 jsonText = simplejson.loads(responseText.data.decode('utf-8'))
@@ -64,3 +64,7 @@ for document in jsonText['response']['docs']:
     print("\tid = " + document['id'] + ":\n\t\t" + document['title'])
     #for doc_key in document:
     #    print(doc_key, "=", document[doc_key])
+
+# Print the highlighting stuff.
+for document in jsonText['highlighting']:
+    print(jsonText['highlighting'][document]['text'])
