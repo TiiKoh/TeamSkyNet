@@ -417,7 +417,7 @@
   <field name="_version_" type="plong" indexed="true" stored="true"/>
   <field name="id" type="string" indexed="true" required="true" stored="true"/>
   <field name="revision" type="pint" indexed="true" stored="false"/>
-  <field name="text" type="text_fi" indexed="true" stored="false"/>
+  <field name="text" type="text_fi" indexed="true" stored="true"/>
   <field name="title" type="string" indexed="true" stored="true"/>
   <field name="user" type="string" indexed="true" stored="false"/>
   <field name="userId" type="pint" indexed="true" stored="false"/>
