@@ -418,7 +418,7 @@
   <field name="id" type="string" indexed="true" required="true" stored="true"/>
   <field name="revision" type="pint" indexed="true" stored="false"/>
   <field name="text" type="text_fi" indexed="true" stored="true"/>
-  <field name="title" type="string" indexed="true" stored="true"/>
+  <field name="title" type="text_fi" indexed="true" stored="true"/>
   <field name="user" type="string" indexed="true" stored="false"/>
   <field name="userId" type="pint" indexed="true" stored="false"/>
   <dynamicField name="*_txt_en_split_tight" type="text_en_splitting_tight" indexed="true" stored="true"/>
