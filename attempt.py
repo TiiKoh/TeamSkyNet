@@ -1,70 +1,56 @@
 import urllib3, simplejson
 
-
-# If user query is more than one words, modify output for reading.
-def fixQuery(searchTerm):
-
-    char_list = list(searchTerm)    # Break characters in words to a list.
-    char_list[0] = char_list[0].upper() # Capitalize the first letter in query.
-    capitalizeNext = 0
-
-    if str(" ") in char_list:  # Check if query has whitespaces.
-        for idx, char in enumerate(char_list):
-
-            if char == str(" "):
-                char_list[idx] = "%20"  # Replace whitespaces with %20 (for url).
-                capitalizeNext = 1
-            else:
-                capitalizeNext = 0
-
-            if capitalizeNext:  # Capitalize the first letter after whitespace.
-                idc = idx + 1
-                char_list[idc] = char_list[idc].upper()
-
-    searchTerm = ''.join(char_list)
-    searchTerm = ''.join(('"', searchTerm, '"'))
-    return(searchTerm)
-
-
-
 http = urllib3.PoolManager()
 
-# Run searchTerm through fixQuery. If query consists of several words,
-# capitalize each individual word.
-searchTerm_raw = input("Give me a search term: ")
-searchTerm_output = ''.join(('"', searchTerm_raw, '"'))
-searchTerm = fixQuery(searchTerm_raw)
+# Function to call Solr.
+def searchSolr(searchTerm):
+    searchTerm_raw = searchTerm
+    searchTerm = ''.join(('"', searchTerm_raw.replace(' ', '%20'), '"'))
 
-#Contructs url query for title field using user's search term
-urlTitle = "http://localhost:8983/solr/fiwiki/select?indent=on&q=title:" + searchTerm + "&wt=json"
-responseTitle =  http.request('GET', urlTitle)
-#print(responseTitle.status)
-jsonTitle = simplejson.loads(responseTitle.data.decode('utf-8'))
+    # Contructs url query for title field using user's search term.
+    urlTitle = "http://localhost:8983/solr/fiwiki/select?indent=on&q=title:" + searchTerm + "&wt=json"
+    responseTitle =  http.request('GET', urlTitle)
+    jsonTitle = simplejson.loads(responseTitle.data.decode('utf-8'))
 
-print("Articles with title " + searchTerm_output)
-print(jsonTitle['response']['numFound'], "documents found.")
+    print("\n\nArticles with title " + '"' + searchTerm_raw + '".')
+    print(jsonTitle['response']['numFound'], "documents found.")
+    print("\nShowing first 10 results:\n")
 
-# Print the id and title fields of each document for title search.
-for document in jsonTitle['response']['docs']:
-    print("\tid = " + document['id'] + ":\n\t\t" + document['title'])
-    #for doc_key in document:
-    #    print(doc_key, "=", document[doc_key])
+    # Print the id and title fields of each document for title search.
+    for document in jsonTitle['response']['docs']:
+        print("\tid = " + document['id'] + ":\n\t\t" + document['title'])
 
-# Contructs url query for text field using user's search term
-urlText = "http://localhost:8983/solr/fiwiki/select?hl.fl=text&hl=on&q=text:" + searchTerm + "&wt=json"
-responseText =  http.request('GET', urlText)
-#print(responseText.status)
-jsonText = simplejson.loads(responseText.data.decode('utf-8'))
+    # Contructs url query for text field using user's search term.
+    urlText = "http://localhost:8983/solr/fiwiki/select?hl.fl=text&hl=on&q=text:" + searchTerm + "&wt=json"
+    responseText =  http.request('GET', urlText)
+    jsonText = simplejson.loads(responseText.data.decode('utf-8'))
 
-print("Articles with text containing " + searchTerm_output)
-print(jsonText['response']['numFound'], "documents found.")
+    print("\n\nArticles with text containing " + '"' + searchTerm_raw + '".')
+    print(jsonText['response']['numFound'], "documents found.")
+    print("\nShowing first 10 results:\n")
 
-# Print the id and title fields of each document for text search.
-for document in jsonText['response']['docs']:
-    print("\tid = " + document['id'] + ":\n\t\t" + document['title'])
-    #for doc_key in document:
-    #    print(doc_key, "=", document[doc_key])
+    idx = 0
+    # Print the id and title fields of each document for text search.
+    for textDocument, hlDocument in zip(jsonText['response']['docs'], jsonText['highlighting']):
+        text_hl = jsonText['highlighting'][hlDocument]['text']
+        idx = idx + 1
+        seq = ("SEARCH RESULT #", str(idx), ":")
+        print(''.join(seq))
+        print("\n\tid = " + textDocument['id'] + ":\n\t\t" + textDocument['title'] +"\n")
+        # If id fields in plain documents and highlighted documents match,
+        # print highlighting for document.
+        if hlDocument == textDocument['id']:
+            for item in text_hl:
+                print("\n"+ item, "\n\n-----------------")
 
-# Print the highlighting stuff.
-for document in jsonText['highlighting']:
-    print(jsonText['highlighting'][document]['text'])
+
+def main():
+    searchTerm = searchSolr(input("Give me a search term: "))
+    while True:
+        prompt = input("Would you like to search again? If not, press enter to exit. ")
+        if prompt != '':
+            searchTerm = searchSolr(prompt)
+        elif prompt == '':
+            break
+
+main()
