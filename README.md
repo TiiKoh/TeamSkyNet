@@ -9,3 +9,16 @@ Before running our program, Solr needs to be properly installed and configured, 
 The program will prompt the user to give it a search term. It will return the number of documents found with the search term in the title and/or text, as well as the names and ids of the first 10 of these documents. It will also show a highlighted snippet for these documents.
 
 The program will then prompt the user to enter another search term, or press 'enter' to quit.
+
+## How to run
+Navigate to the correct directory
+
+If on windows:
+```bash
+py attempt.py
+```
+
+If on unix/linux:
+```bash
+python attempt.py
+```
