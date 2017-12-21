@@ -1,6 +1,7 @@
-import urllib3, simplejson
+import urllib3, simplejson, re
 
 http = urllib3.PoolManager()
+
 
 # Function to call Solr.
 def searchSolr(searchTerm):
@@ -14,7 +15,8 @@ def searchSolr(searchTerm):
 
     print("\n\nArticles with title " + '"' + searchTerm_raw + '".')
     print(jsonTitle['response']['numFound'], "documents found.")
-    print("\nShowing first 10 results:\n")
+    if jsonTitle['response']['numFound'] >= 10:
+        print("\nShowing first 10 results:\n")
 
     # Print the id and title fields of each document for title search.
     for document in jsonTitle['response']['docs']:
@@ -27,27 +29,41 @@ def searchSolr(searchTerm):
 
     print("\n\nArticles with text containing " + '"' + searchTerm_raw + '".')
     print(jsonText['response']['numFound'], "documents found.")
-    print("\nShowing first 10 results:\n")
+    if jsonText['response']['numFound'] >= 10:
+        print("\nShowing first 10 results:\n")
 
     idx = 0
     # Print the id and title fields of each document for text search.
     for textDocument, hlDocument in zip(jsonText['response']['docs'], jsonText['highlighting']):
         text_hl = jsonText['highlighting'][hlDocument]['text']
         idx = idx + 1
-        seq = ("SEARCH RESULT #", str(idx), ":")
+        seq = ("-----------------\n", "SEARCH RESULT #", str(idx), ":")
         print(''.join(seq))
-        print("\n\tid = " + textDocument['id'] + ":\n\t\t" + textDocument['title'] +"\n")
+        print("\n\tid = " + textDocument['id'] + ":\n\t\t" + textDocument['title'])
         # If id fields in plain documents and highlighted documents match,
-        # print highlighting for document.
+        # run highlighted document through cleaning.
         if hlDocument == textDocument['id']:
-            for item in text_hl:
-                print("\n"+ item, "\n\n-----------------")
+            cleanHighlighting(text_hl)
+
+
+# Clean text snippets from redundant clutter and print output.
+def cleanHighlighting(text):
+    text = ''.join(text)
+    text = text.replace('\n\n', '\n')
+    text = text.replace('\n', '\n>>> ')
+    text = text.replace("'''", "'")
+    text = text.replace("''", "'")
+
+    text = re.sub(r'\[\[\w*\ *\w*\||\|\w*|\<ref name=\w*', '', text, flags=re.IGNORECASE)
+    text = re.sub(r'\[\[|\]\]|\{\{|\}\}|\<br|\/>|\<em>|\</em>', '', text, flags=re.IGNORECASE)
+
+    print("\n>>> "+ text, "\n")
 
 
 def main():
     searchTerm = searchSolr(input("Give me a search term: "))
     while True:
-        prompt = input("Would you like to search again? If not, press enter to exit. ")
+        prompt = input("\nWould you like to search again? If not, press enter to exit. ")
         if prompt != '':
             searchTerm = searchSolr(prompt)
         elif prompt == '':
